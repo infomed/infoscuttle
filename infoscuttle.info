@@ -1,0 +1,7 @@
+; $Id$
+name = Infoscuttle
+package = "Infomed"
+description = Allows view bookmarks from Infomed scuttle. Provides integration with scuttle's SOAP web services, created by Infomed.
+core = 6.x
+version = "6.x-1.2"
+dependencies[] = infoutilities

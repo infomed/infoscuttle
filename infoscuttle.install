@@ -1,0 +1,97 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Implements hooks install, uninstall, schema, update, requirements.
+ *
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function infoscuttle_install() {
+  // Create tables.
+  drupal_install_schema('infoscuttle');  
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function infoscuttle_schema() {
+  $schema['infoscuttle_block'] = array(
+    'fields' => array(
+      'ibid'    => array('type' => 'serial', 'length' => 10, 'unsigned' => TRUE, 'not null' => TRUE),
+      'title'    => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+      'descr'    => array('type' => 'text'),
+      'descr_place'    => array('type' => 'int', 'size' => 'small', 'length' => 1, 'default' => 0),
+      'setid'    => array('type' => 'int', 'length' => 10, 'unsigned' => TRUE, 'not null' => TRUE),
+      'text'    => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
+      'users' => array('type' => 'text', 'size' => 'big', 'default' => NULL),
+      'tags' => array('type' => 'text', 'size' => 'big', 'default' => NULL),
+      'maxentries' => array('type' => 'int', 'size' => 'small', 'length' => 2, 'not null' => TRUE, 'default' => 10),
+      'orderby'    => array('type' => 'char', 'length' => 15, 'default' => NULL),
+      'startdate' => array('type' => 'datetime', 'default' => NULL),
+      'enddate' => array('type' => 'datetime', 'default' => NULL),
+      'more_pager' => array('type' => 'int', 'size' => 'small', 'length' => 1, 'default' => 1),
+      'tags_opr'    => array('type' => 'char', 'length' => 3, 'default' => 'OR'),
+    ),
+    'primary key' => array('ibid'),
+  );
+  $schema['infoscuttle_settings'] = array(
+    'fields' => array(
+      'setid'    => array('type' => 'serial', 'length' => 10, 'unsigned' => TRUE, 'not null' => TRUE),
+      'url'    => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE),
+    ),
+    'primary key' => array('setid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function infoscuttle_uninstall() {
+  //Delete infoscuttle module's blocks
+  db_query("DELETE FROM {blocks} WHERE module = 'infoscuttle'");
+  db_query("DELETE FROM {blocks_roles} WHERE module = 'infoscuttle'");
+
+  //Delete infoscuttle permissions
+  infoutilities_perm_delete('infoscuttle');
+
+  // Remove tables.
+  drupal_uninstall_schema('infoscuttle');
+}
+
+/**
+ * Implementation of hook_requirements(). 
+ *
+ * Sets an requirement error during module installation if php soap extension is not installed  
+ *
+ */
+function infoscuttle_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'install') {
+    // Check soap extension
+    if (!extension_loaded ('soap')) {
+      $requirements['soap']['severity'] = REQUIREMENT_ERROR;
+      $requirements['soap']['description'] = t('%module was not installed because the SOAP extension for PHP is not enabled. Check your <code>php.ini</code> to see how you can enable it.', array('%module' => 'Infoscuttle'));
+      $requirements['soap']['title'] = t('SOAP extension');
+    }
+  }
+  return $requirements;
+}
+/**
+ * Implementation of hook_update().
+ *
+ * Add fields descr, and descr_place to infoscuttle_block
+ */
+function infoscuttle_update_6005() {
+  $ret = array();
+  
+  $ret[] = update_sql("ALTER TABLE {infoscuttle_block} ADD descr text");
+  $ret[] = update_sql("ALTER TABLE {infoscuttle_block} ADD descr_place smallint default 0");
+
+  return $ret;
+}

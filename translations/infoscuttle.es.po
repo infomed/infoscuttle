@@ -1,0 +1,479 @@
+# $Id$
+#
+# Spanish translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  infoscuttle.module: n/a
+#  infoscuttle.info: n/a
+#  infoscuttle.install: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Infoscuttle\n"
+"POT-Creation-Date: 2009-11-04 14:58-0600\n"
+"PO-Revision-Date: 2009-11-04 14:58-0600\n"
+"Last-Translator: yazna <yazna@infomed.sld.cu>\n"
+"Language-Team: Infomed\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: infoscuttle.module:34
+msgid "<strong>Description:</strong> It allows to visualize inside Drupal links of Scuttle. For example: <a href=\"http://infomed20.sld.cu/infoenlaces\">Infoenlaces</a>. It integrates with the Web Service SOAP created by Infomed, for the Scuttle."
+msgstr ""
+"<strong>Descripción:</strong> Permite ver dentro de Drupal enlaces "
+"del Scuttle. Por ejemplo: <a "
+"href=\"http://infomed20.sld.cu/infoenlaces\">Infoenlaces</a>. Se "
+"integra con el Web Service SOAP creado por Infomed para el Scuttle."
+
+#: infoscuttle.module:35
+msgid "<strong>Installation:</strong> Copy the module to the folder of modules of your installation of Drupal (..\\sites\\all\\modules\\). Enable it in administer->site building->modules. When module is enabled, it creates administration menu, tables with prefix infoscuttle_."
+msgstr ""
+"<strong>Instalación:</strong> Copie el módulo a la carpeta de "
+"módulos de su instalación de Drupal (..\\sites\\all\\modules\\). "
+"Habilítelo en administrar->construcción del sitio->módulos. Al habilitar el "
+"módulo este crea el menú de administración y tablas con el prefijo "
+"infoscuttle_. "
+
+#: infoscuttle.module:36
+msgid "<strong>Administration Menu:</strong><ul><li>Administer Infoscuttle (shows module help)<ul><li>Permissions<ul><li>View Infoscuttle Links: allows to see the list of links retrieved by infoscuttle blocks.</li><li>Administer Infoscuttle: allows the access to the administration menu.</li><li>Administer Infoscuttle Blocks: allows the access to the Blocks option.</li><li>Configure Infoscuttle: allows the access to the Settings option.</li></ul></li><li>Settings<ul><li>Url: to set Urls of different Scuttle instances. They can be created, modified and eliminated.</li></ul></li><li>Blocks<ul><li>Infoscuttle Block: to configure a search based on Url of Scuttle Server, combinations of categories, users and date; and how to display results. They can be created, modified and eliminated.</li></ul></li></ul></li></ul>"
+msgstr ""
+"<strong>Menú de Administración:</strong><ul><li>Administrar "
+"Enlace (muestra la ayuda)<ul><li>Permisos<ul><li>Ver enlaces "
+"del módulo Enlace: permite ver las listas de enlaces recuperadas por los "
+"bloques del módulo Enlace.</li><li>Administrar Enlace: permite el "
+"acceso al menú de administración.</li><li>Administrar Bloques "
+"Enlace: permite el acceso a la opción "
+"Bloques.</li><li>Configurar Enlace: permite el acceso a la "
+"opción de Configuración.</li></ul></li><li>Opciones<ul><li>Url: para "
+"definir las Urls de los diferentes Servidores de Scuttle de Infomed. "
+"Estas pueden ser creadas, modificadas y "
+"eliminadas.</li></ul></li><li>Bloques<ul><li>Bloque Enlace: para "
+"configurar una búsqueda de enlaces basada en la Url del servidor de "
+"scuttle; combinaciones de categorías, usuarios y fecha; y forma de "
+"mostrar los resultados. Ellos pueden ser adicionados, modificados y "
+"eliminados.</li></ul></li></ul></li></ul>"
+
+#: infoscuttle.module:37
+msgid "<strong>Tables:</strong> <ul><li>infoscuttle_settings: to save configuration servers Scuttle</li></ul> <ul><li>infoscuttle_block: to save personalization of blocks module</li></ul>"
+msgstr ""
+"<strong>Tablas:</strong> <ul><li>infoenlace_settings: para guardar "
+"las Urls de los servidores de Scuttle</li></ul> "
+"<ul><li>infoenlace_block: para guardar los bloques del "
+"módulo</li></ul>"
+
+#: infoscuttle.module:38
+msgid "<strong>Visualization:</strong> Like any other block of Drupal, Infoscuttle block should be placed in any region for display, this can be done in: administer->site building->blocks. Taking into account all the customization options the block displays a list of recovered links from Scuttle Web Service."
+msgstr ""
+"<strong>Visualización:</strong> Como cualquier otro bloque de Drupal, "
+"un bloque Enlace debe ser ubicado en alguna región para "
+"mostrarse, esto se puede hacer en: administrar->construcción del sitio->bloques. "
+"<ul><li>Bloque Enlace: Muestra una lista de enlaces teniendo en "
+"cuenta las opciones de personalización del bloque.</li></ul>"
+
+#: infoscuttle.module:39
+msgid "If the Web Service gives error or not recover any data the block is not visualized."
+msgstr ""
+"Si el Web Service da un error o no se recuperan datos el bloque no se "
+"muestra."
+
+#: infoscuttle.module:40
+msgid "<strong>Disable:</strong> Disable in: administer->modules. After would stop to be shown: <ul><li>The Administer Infoscuttle Menu</li></ul> <ul><li>The blocks that had been located in any region</li></ul> But still stay the tables created by the module with all its data."
+msgstr ""
+"<strong>Deshabilitar:</strong> Deshabilitar en: administrar->módulos. "
+"Después de lo cual no se mostrarán: <ul><li>El Menú Administrar "
+"Enlace</li></ul> <ul><li>Los bloques que fueron ubicados en "
+"cualquier región</li></ul> Pero se mantienen las tablas creadas por "
+"el módulo y todos sus datos."
+
+#: infoscuttle.module:41
+msgid "<strong>Uninstall:</strong> Uninstall in: administer->modules->uninstall. After would eliminate the tables created by the module and in the table blocks (Drupal) deletes records with infoscuttle blocks."
+msgstr ""
+"<strong>Desinstalar:</strong> Desinstalar en: "
+"administrar->módulos->desinstalar. Después de lo cual se eliminan las "
+"tablas creadas por el módulo y los registros en la tabla bloques de "
+"Drupal cuyo módulo es Enlace."
+
+#: infoscuttle.module:44 infoscuttle.info:0
+msgid "Allows view bookmarks from Infomed scuttle. Provides integration with scuttle's SOAP web services, created by Infomed."
+msgstr ""
+"Permite ver enlaces de Servidores de Scuttle de Infomed. Se integra "
+"con el Web Service SOAP creado por Infomed para el Scuttle."
+
+#: infoscuttle.module:244;319
+msgid "Title"
+msgstr "Título"
+
+#: infoscuttle.module:244
+msgid "Max Links"
+msgstr "Cantidad de Enlaces"
+
+#: infoscuttle.module:244;455
+msgid "Region"
+msgstr "Región"
+
+#: infoscuttle.module:244;627
+msgid "Operations"
+msgstr "Operaciones"
+
+#: infoscuttle.module:248;633
+msgid "edit"
+msgstr "editar"
+
+#: infoscuttle.module:249;633
+msgid "delete"
+msgstr "eliminar"
+
+#: infoscuttle.module:252
+msgid "configure"
+msgstr "configurar"
+
+#: infoscuttle.module:263
+msgid "No infoscuttle blocks exist."
+msgstr "No existen bloques de enlace."
+
+#: infoscuttle.module:322
+msgid "Enter the title of the block"
+msgstr "Introduzca el título del bloque"
+
+#: infoscuttle.module:327
+msgid "Description"
+msgstr "Descripción"
+
+#: infoscuttle.module:329
+msgid "Enter the description of the block"
+msgstr "Introduzca la descripción del bloque"
+
+#: infoscuttle.module:333
+msgid "Show Description"
+msgstr "Mostrar Descripción"
+
+#: infoscuttle.module:335
+msgid "Up of the Items"
+msgstr "Arriba de la lista"
+
+#: infoscuttle.module:335
+msgid "Below of the Items"
+msgstr "Debajo de la lista"
+
+#: infoscuttle.module:336
+msgid "Select the place where you want to show Description."
+msgstr "Seleccione el lugar donde va a mostrar la Descripción."
+
+#: infoscuttle.module:341;665
+msgid "URL"
+msgstr "URL"
+
+#: infoscuttle.module:344
+msgid "Select the URL of the infoscuttle server."
+msgstr "Seleccione la URL del servidor de scuttle"
+
+#: infoscuttle.module:350
+msgid "Filter by:"
+msgstr "Filtrar por:"
+
+#: infoscuttle.module:354
+msgid "Tag List:"
+msgstr "Lista de categorías:"
+
+#: infoscuttle.module:355
+msgid "Enter a comma separated list of tags to be used for block; leave blank to collect links FROM all tags."
+msgstr ""
+"Introduzca la lista de categorías separadas por coma. Déjelo en "
+"blanco para obtener los enlaces de todas las categorías."
+
+#: infoscuttle.module:364
+msgid "All that Tags"
+msgstr "Todas estas categorías"
+
+#: infoscuttle.module:364
+msgid "Any of that Tags"
+msgstr "Cualquiera de estas categorías"
+
+#: infoscuttle.module:369
+msgid "User"
+msgstr "Usuario"
+
+#: infoscuttle.module:372
+msgid "Enter a user whose infoscuttle links qualify; leave blank to collect links FROM all users."
+msgstr ""
+"Introduzca el usuario del que desea recuperar los enlaces. Déjelo en "
+"blanco para obtener los enlaces de todos los usuarios."
+
+#: infoscuttle.module:387;395
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: infoscuttle.module:403
+msgid "Start Date"
+msgstr "Fecha de Inicio"
+
+#: infoscuttle.module:404
+msgid "Enter start date of links that will appear in the block; leave blank to collect links FROM any time."
+msgstr ""
+"Introduzca la fecha inicial para recuperar los enlaces. Déjelo en "
+"blanco para obtener los enlaces DESDE cualquier fecha."
+
+#: infoscuttle.module:412
+msgid "End Date"
+msgstr "Fecha Hasta"
+
+#: infoscuttle.module:413
+msgid "Enter end date of links that will appear in the block; leave blank to collect links TO any time."
+msgstr ""
+"Introduzca la fecha final para recuperar los enlaces. Déjelo en "
+"blanco para obtener los enlaces HASTA cualquier fecha."
+
+#: infoscuttle.module:421
+msgid "View in block"
+msgstr "Ver resultados"
+
+#: infoscuttle.module:425
+msgid "Number of Links"
+msgstr "Cantidad de Enlaces"
+
+#: infoscuttle.module:429
+msgid "The maximum number of links that will appear in the block."
+msgstr "Mayor cantidad de enlaces que pueden aparecer en el bloque."
+
+#: infoscuttle.module:434
+msgid "Results as"
+msgstr "Resultados como"
+
+#: infoscuttle.module:435
+msgid "Results Page"
+msgstr "Página de resultados"
+
+#: infoscuttle.module:435
+msgid "Items List, with more... link"
+msgstr "Lista de items, con el enlace más..."
+
+#: infoscuttle.module:435
+msgid "Items List"
+msgstr "Lista de Items"
+
+#: infoscuttle.module:437
+msgid "Select the format to show results. Results Page: shows a list of results (titles and descriptions), and a pager. Items List: shows a list of result's titles. More... link: allows access to other results."
+msgstr ""
+"Seleccione el formato para mostrar los resultados. Página de "
+"resultados: muestra una lista de resultados (títulos, descripciones y "
+"fechas) y la paginación. Lista de Items: muestra una lista de los "
+"títulos y fechas de los eventos. Enlace más...: permite el acceso a "
+"los otros resultados."
+
+#: infoscuttle.module:441
+msgid "Order By"
+msgstr "Ordenar por"
+
+#: infoscuttle.module:442
+msgid "Date (descending)"
+msgstr "Fecha (descendente)"
+
+#: infoscuttle.module:442
+msgid "Date (ascending)"
+msgstr "Fecha (ascendente)"
+
+#: infoscuttle.module:442
+msgid "Title (ascending)"
+msgstr "Título (ascendente)"
+
+#: infoscuttle.module:442
+msgid "Title (descending)"
+msgstr "Título (descendente)"
+
+#: infoscuttle.module:444
+msgid "How to order the results."
+msgstr "Cómo ordenar los resultados"
+
+#: infoscuttle.module:448
+msgid "none"
+msgstr "ninguno"
+
+#: infoscuttle.module:456
+msgid "Assign a block to a region."
+msgstr "Asigne el bloque a una región."
+
+#: infoscuttle.module:463;679
+msgid "Submit"
+msgstr "Guardar"
+
+#: infoscuttle.module:477
+msgid "Sorry, check scuttle service URL at settings."
+msgstr "Disculpe, chequee la URL del servidor de scuttle en las opciones."
+
+#: infoscuttle.module:484
+msgid "You must select a number for the maximum number of links."
+msgstr "Usted debe seleccionar un número para el máximo de enlaces."
+
+#: infoscuttle.module:487
+msgid "Maximum number of links must be positive."
+msgstr "La cantidad máxima de enlaces debe ser positiva."
+
+#: infoscuttle.module:567
+msgid "Are you sure you want to delete %title?"
+msgstr "¿Está seguro de que quiere eliminar %title?"
+
+#: infoscuttle.module:569;762
+msgid "This action cannot be undone."
+msgstr "Esta acción no se puede deshacer."
+
+#: infoscuttle.module:570;753;763
+msgid "Delete"
+msgstr "Eliminar"
+
+#: infoscuttle.module:571;754;764
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: infoscuttle.module:595
+msgid "The block has been removed."
+msgstr "El bloque ha sido eliminado."
+
+#: infoscuttle.module:627
+msgid "Url"
+msgstr "Url"
+
+#: infoscuttle.module:638
+msgid "No settings exist."
+msgstr "No hay opciones definidas."
+
+#: infoscuttle.module:668
+msgid "The fully-qualified URL of the infoscuttle server( Endpoint). Ej. http://dominio/services/soap/"
+msgstr ""
+"URL válida del servidor de enlaces ( Endpoint). Ej. "
+"http://dominio/services/soap/"
+
+#: infoscuttle.module:697
+msgid "Sorry, that is not a valid URL."
+msgstr "Disculpe, esta no es una URL válida."
+
+#: infoscuttle.module:706
+msgid "Sorry, that URL already exists at settings."
+msgstr "Disculpe, esta URL existe en las opciones."
+
+#: infoscuttle.module:747
+msgid "The following blocks are using this setting. They will be deleted, and <em>all data from them will be lost</em>!"
+msgstr ""
+"Los bloques siguientes están usando esta opción. Ellos serán "
+"eliminados y sus datos se perderán."
+
+#: infoscuttle.module:750
+msgid "Confirm deletion"
+msgstr "Confirmar eliminación"
+
+#: infoscuttle.module:752
+msgid "Are you sure you want to delete %url and blocks above?. <p>This action cannot be undone.</p>"
+msgstr ""
+"¿Está seguro de que quiere eliminar %url y los bloques de arriba?. "
+"<p>Esta acción no puede revertirse.</p>"
+
+#: infoscuttle.module:760
+msgid "Are you sure you want to delete %url?"
+msgstr "¿Está seguro de que quiere eliminar %url?"
+
+#: infoscuttle.module:805
+msgid "InfoScuttle block does not exist (ibid:%ibid)"
+msgstr "No existe bloque de Infoscuttle (ibid:%ibid)"
+
+#: infoscuttle.module:869
+msgid "Your search yielded no results"
+msgstr "Su búsqueda no produjo ningún resultado"
+
+#: infoscuttle.module:884
+msgid "more..."
+msgstr "más..."
+
+#: infoscuttle.module:957
+msgid "Infoscuttle Error: Sorry, this scuttle Service (%url) is not available now. Block:%elem."
+msgstr "Error de Infoscuttle: Los sentimos este Servicio de Scuttle (%url) no está disponible en estos momentos. Bloque:%elem."
+
+#: infoscuttle.module:702
+msgid "Added '%module' block: '%title'."
+msgstr "Adicionado '%module' bloque: '%title'."
+
+#: infoscuttle.module:709
+msgid "Updated '%module' block: '%title'."
+msgstr "Actualizado '%module' bloque: '%title'."
+
+#: infoscuttle.module:753
+msgid "Deleted '%module' block: '%title'."
+msgstr "Eliminado '%module' block: '%title'."
+
+#: infoscuttle.module:996
+msgid "Sorry, the SOAP extension for PHP is not enabled. Check your <code>php.ini</code> to see how you can enable it."
+msgstr ""
+"Lo sentimos, no está habilitada la extensión SOAP para PHP. "
+"Verifique su <code>php.ini</code> para ver como puede habilitarla."
+
+#: infoscuttle.module:1046
+msgid " found results."
+msgstr " resultados encontrados."
+
+#: infoscuttle.install:78
+msgid "%module was not installed because the SOAP extension for PHP is not enabled. Check your <code>php.ini</code> to see how you can enable it."
+msgstr ""
+"%module no se instaló porque la extensión SOAP de PHP no está "
+"habilitada. Revise su <code>php.ini</code> para que vea como "
+"habilitarla."
+
+#: infoscuttle.install:79
+msgid "SOAP extension"
+msgstr "Extensión SOAP"
+
+#: infoscuttle.info:0
+msgid "Infoscuttle"
+msgstr "Enlace"
+
+#: infoscuttle.info:0
+msgid "Infomed"
+msgstr "Infomed"
+
+#: infoscuttle.module:79
+msgid "view infoscuttle links"
+msgstr "ver enlaces del módulo Enlace"
+
+#: infoscuttle.module:79
+msgid "administer infoscuttle"
+msgstr "administrar Enlace"
+
+#: infoscuttle.module:79
+msgid "administer infoscuttle blocks"
+msgstr "administrar bloques de enlace"
+
+#: infoscuttle.module:79
+msgid "configure infoscuttle"
+msgstr "configurar enlace"
+
+#: infoscuttle.module:89
+msgid "Administer Infoscuttle"
+msgstr "Administrar Enlace"
+
+#: infoscuttle.module:95
+msgid "Permissions"
+msgstr "Permisos"
+
+#: infoscuttle.module:104
+msgid "Blocks"
+msgstr "Bloques/Cajas"
+
+#: infoscuttle.module:139
+msgid "Settings"
+msgstr "Opciones"
+
+#: infoscuttle.module:110
+msgid "view infoscuttle blocks"
+msgstr "ver bloques de enlace"
+
+#: infoscuttle.module:118
+msgid "add infoscuttle block"
+msgstr "agregar bloque de enlace"
+
+#: infoscuttle.module:145
+msgid "view infoscuttle settings"
+msgstr "ver opciones de enlace"
+
+#: infoscuttle.module:154
+msgid "add infoscuttle setting"
+msgstr "agregar opción de enlace"

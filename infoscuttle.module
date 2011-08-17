@@ -1,0 +1,1146 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Allows view bookmarks from infomed scuttle.
+ *
+ * Provides integration with scuttle's SOAP web services, created by Infomed (https://github.com/infomed/soap-services-scuttle).
+ */
+
+/**
+ * @name Drupal hooks 
+ * @{
+ * Implementation of Drupal hooks in module
+ *
+ */
+
+/**
+ * Implementation of hook_help().
+ *
+ * Display help and module information
+ *
+ * @param $path
+ *   which path of the site we're displaying help
+ * @param $arg
+ *   array that holds the current path as would be returned from arg() function
+ * @return
+ *    help text for the path
+ */
+function infoscuttle_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#infoscuttle":
+	  $output = infoscuttle_showhelp();
+      break;
+      case 'admin/modules#description':
+      $output = t("Allows view bookmarks from Infomed scuttle. Provides integration with scuttle's SOAP web services, created by Infomed.");
+      break;
+  }
+  return $output;
+} // function infoscuttle_help
+
+/**
+ * Implementation of hook_theme().
+ *
+ */
+function infoscuttle_theme() {
+
+  return array(
+    'infoscuttle_results' => array(
+      'arguments' => array('result' => NULL),
+    ),
+    'infoscuttle_results_items' => array(
+      'arguments' => array('result' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Valid permissions for this module
+ *
+ * @return array
+ *   An array of valid permissions for the infoscuttle module
+ */
+function infoscuttle_perm() {
+  return array('view infoscuttle links', 'administer infoscuttle', 'administer infoscuttle blocks', 'configure infoscuttle');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function infoscuttle_menu() {
+  $items = array();
+
+  $items['admin/infoscuttle'] = array(
+    'title' => 'Administer Infoscuttle',
+    'page callback' => 'infoscuttle',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle'),
+  );
+  $items['admin/infoscuttle/permissions'] = array(
+    'title' => 'Permissions',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('infoutilities_perm_form', 1),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer permissions'),
+    'weight' => -2,
+  );
+  $items['admin/infoscuttle/block'] = array(
+    'title' => 'Blocks',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle blocks'),
+    'page callback' => 'infoscuttle_admin',
+    'weight' => 0,
+  );
+  $items['admin/infoscuttle/block/view'] = array(
+    'title' => 'view infoscuttle blocks',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle blocks'),
+    'page callback' => 'infoscuttle_admin',
+    'weight' => -1,
+    'type' => MENU_DEFAULT_LOCAL_TASK
+  );
+  $items['admin/infoscuttle/block/add'] = array(
+    'title' => 'add infoscuttle block',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle blocks'),
+    'page callback' => 'infoscuttle_admin_edit',
+    'type' => MENU_LOCAL_TASK
+  );
+  $items['admin/infoscuttle/block/edit'] = array(
+    'title' => 'edit infoscuttle block',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle blocks'),
+    'page callback' => 'infoscuttle_admin_edit',
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/infoscuttle/block/delete'] = array(
+    'title' => 'delete infoscuttle block',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle blocks'),
+    'page callback' => 'infoscuttle_admin_delete',
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/infoscuttle/settings'] = array(
+    'title' => 'Settings',
+    'access callback' => 'user_access',
+    'access arguments' => array('configure infoscuttle'),
+    'page callback' => 'infoscuttle_settings',
+    'weight' => -1,
+  );
+  $items['admin/infoscuttle/settings/view'] = array(
+    'title' => 'view infoscuttle settings',
+    'access callback' => 'user_access',
+    'access arguments' => array('configure infoscuttle'),
+    'page callback' => 'infoscuttle_settings',
+    'weight' => -1,
+    'type' => MENU_DEFAULT_LOCAL_TASK
+  );
+
+  $items['admin/infoscuttle/settings/add'] = array(
+    'title' => 'add infoscuttle setting',
+    'access callback' => 'user_access',
+    'access arguments' => array('configure infoscuttle'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('infoscuttle_settings_form'),
+    'type' => MENU_LOCAL_TASK
+  );
+  $items['admin/infoscuttle/settings/edit'] = array(
+    'title' => 'edit infoscuttle setting',
+    'access callback' => 'user_access',
+    'access arguments' => array('configure infoscuttle'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('infoscuttle_settings_form'),
+    'type' => MENU_CALLBACK
+  );
+
+  $items['admin/infoscuttle/settings/delete'] = array(
+    'title' => 'delete infoscuttle setting',
+    'access callback' => 'user_access',
+    'access arguments' => array('configure infoscuttle'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('infoscuttle_setting_delete_form'),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/infoscuttle/help'] = array(
+    'title' => 'Help',
+    'page callback' => 'infoscuttle_showhelp',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer infoscuttle'),
+    'weight' => 1,
+  );
+
+  return $items;
+}
+
+/**
+ * Declare a block or set of blocks
+ *
+ * @param $op
+ *   wich information retrieve (list, configure, save, view)
+ * @param $delta
+ *   wich block to return
+ * @param $edit
+ *   if $op is save, the submitted form data from the configuration form
+ * @return if $op is 'list' An array of block descripton,
+ *         if $op is 'configure' return the configuration form  NO
+ *         if $op is 'save' return nothing     NO
+ *         if $op is 'view' return an array with subject and content of block indexed by $delta
+ */
+function infoscuttle_block($op='list', $delta=0, $edit = array()) {
+  if (user_access('view infoscuttle links')) {
+    switch ($op) {
+      // listing of blocks, such as on the admin/block page
+      case 'list':
+        $result = db_query("SELECT ibid, title FROM {infoscuttle_block}");
+        $blocks = array();
+        while ($block = db_fetch_object($result)) {
+          $blocks["infoscuttle-$block->ibid"]['info'] = check_plain($block->title);
+        }
+        return $blocks;
+      case 'view':
+        list(, $id) = explode('-', $delta);
+        return infoscuttle_block_render($id);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_preprocess().
+ *
+ * Override 'content' variable into the page templates, to show more links.
+ *
+ * @param $vars
+ *   A sequential array of variables to pass to the theme template.
+ */
+function infoscuttle_preprocess_page(&$vars) {
+  global $theme, $theme_key;
+
+  if( isset($_GET['isc_id']) && $_GET['isc_id']){
+    //show more_links
+    $ibid = $_GET['isc_id'];
+  }
+  else{
+    //another page
+  	return;
+  }
+  //get the block title and content 
+  $title_content = infoscuttle_block_render($ibid, 1);
+
+  //add link to current page on breadcrumb
+  $breadcrumb = infoutilities_update_breadcrumb();
+  
+  if (module_exists('menu_breadcrumb')) { 
+    if (variable_get('menu_breadcrumb_append_node_title', 0) == 1 ) {
+      //add current content (more links) to breadcrumbs
+	  if (variable_get('menu_breadcrumb_append_node_url', 0) == 1) {
+        //add url
+		$options['query'] = array('isc_id' => $_GET['isc_id']);
+		$breadcrumb[] = l($title_content['subject'], $_GET['q'], $options);
+	  }
+	  else {
+	    //add title
+        $breadcrumb[] = $title_content['subject'];
+	  }
+	}
+  }  
+
+  //limpia las regiones setadas en infoutilities_clean_regions
+  $clean_regions = variable_get('infoutilities_clean_regions', array());
+  if ( $clean_regions ){
+    foreach ($clean_regions as $clean_region){
+      $vars[$clean_region] = '';
+	}
+  }
+
+  //assign breadcrumb  
+  $vars['breadcrumb'] = theme('breadcrumb', $breadcrumb);
+  //assign the block title to page title
+  $vars['title'] = $title_content['subject'];
+  //assign the list of items to page 'content' region 
+  $vars['content'] = $title_content['content'];
+  
+}
+
+/**
+ * @} End of "Drupal hooks".
+ */
+
+/**
+ * @name Block Administration 
+ * @{
+ * view, add, edit, delete blocks
+ */
+/**
+ * Administration page of infoscuttle, shows a list of links to module options
+ */
+function infoscuttle() {
+  //igual que system_admin_menu_block_page
+  $item = menu_get_item();
+  $content = system_admin_menu_block($item);
+  $output = theme('admin_block_content', $content);
+  return $output;
+}
+
+/**
+ * Administration page of infoscuttle blocks
+ */
+function infoscuttle_admin() {
+  $result = pager_query("SELECT ibid, title, maxentries FROM {infoscuttle_block} ORDER BY title", 20);
+
+  $header = array(t("Title"), t("Max Links"), t("Region"), t("Operations"));
+
+  $def_theme = variable_get('theme_default', 'garland');
+  while ($u = db_fetch_object($result)) {
+    $region = db_result(db_query("SELECT region FROM {blocks} WHERE delta = '%s' AND theme = '%s'", 'infoscuttle-'.$u->ibid, $def_theme));
+    $edit = l(t('edit'), "admin/infoscuttle/block/edit/$u->ibid");
+	$delete = l(t('delete'), "admin/infoscuttle/block/delete/$u->ibid");
+	//$destination para que retorne a blocks del modulo
+	$destination = "destination=admin/infoscuttle/block";
+	$configure = l(t('configure'), "admin/build/block/configure/infoscuttle/infoscuttle-$u->ibid", array("query" => $destination));
+
+    $rows[] = array(
+      array("data" => check_plain($u->title)),
+      array("data" => $u->maxentries, "align" => "right"),
+      array("data" => $region, "align" => "center"),
+      array("data" => $edit .' | '. $delete .' | '. $configure)
+    );
+  }
+
+  if (!$rows) {
+    $rows[] = array(array("data" => t("No infoscuttle blocks exist."), "colspan" => "4"));
+  }
+
+  //presenta los resultados de una consulta a la BD como un grupo de pags
+  $pager = theme("pager", NULL, 20, 0);
+  if (!empty($pager)) {
+    $rows[] = array(array("data" => $pager, "colspan" => "4"));
+  }
+
+  $output = theme('table', $header, $rows);
+
+  return $output;
+}
+
+/**
+ * Shows form to edit an infoscuttle block
+ *
+ * @param $ibid
+ *   id of block to edit
+ * @return
+ *   HTML of form to edit infoscuttle block
+ */
+function infoscuttle_admin_edit($ibid = 0) {
+
+  if (arg(2) == 'edit' && (!is_numeric($ibid) || $ibid == 0))  {
+    return drupal_access_denied();
+  }
+
+  $output = drupal_get_form('infoscuttle_block_form', $ibid);
+
+  return $output;
+}
+
+
+/**
+ * Block's Edit form
+ *
+ * @param $ibid
+ *   id of infoscuttle block to edit
+ * @return
+ *   associative array $form of $ibid infoscuttle block
+ *
+ * @ingroup forms
+ * @see infoscuttle_block_form_submit()
+ * @see infoscuttle_block_form_validate()
+ */
+function infoscuttle_block_form(&$form_state, $ibid = 0) {
+
+  $block = infoscuttle_load_block($ibid);
+
+  $form['ibid'] = array(
+    '#type' => 'hidden',
+    '#value' => $ibid,
+  );
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => $block['title'],
+    '#maxlength' => 64,
+    '#description' => t('Enter the title of the block'),
+    '#required' => TRUE,
+  );
+  $form['descr'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#default_value' => $block['descr'],
+    '#description' => t('Enter the description of the block'),
+  );
+  $form['descr_place'] = array(
+    '#type' => 'select',
+    '#title' => t('Show Description'),
+    '#default_value' => $block['descr_place'] ? $block['descr_place'] : 0,
+    '#options' => array(0 => '', 1 => t('Up of the Items'), 2 => t('Below of the Items')),
+    '#description' => t('Select the place where you want to show Description.'),
+  );
+  $options = infoscuttle_urls_list();
+  $form['setid'] = array(
+    '#type' => 'select',
+    '#title' => t('URL'),
+    '#default_value' => $block['setid'],
+    '#options' => $options,
+    '#description' => t('Select the URL of the infoscuttle server.'),
+    '#required' => TRUE,
+  );
+
+  $form['filtro'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filter by:'),
+  );
+  $form['filtro']['fields_tag'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Tag List:'),
+    '#description' => t('Enter a comma separated list of tags to be used for block; leave blank to collect links FROM all tags.'),
+  );
+  $form['filtro']['fields_tag']['tags'] = array(
+    '#type' => 'textfield',
+    '#default_value' => $block['tags'],
+    '#maxlength' => 1024,
+  );
+  $form['filtro']['fields_tag']['tags_opr'] = array(
+    '#type' => 'select',
+    '#options' => array('AND' => t('All that Tags'), 'OR' => t('Any of that Tags')),
+    '#default_value' => $block['tags_opr'],
+  );
+  $form['filtro']['users'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User'),
+    '#default_value' => $block['users'],
+    '#maxlength' => 25,
+    '#description' => t('Enter a user whose infoscuttle links qualify; leave blank to collect links FROM all users.'),
+  );
+
+  $start_time = NULL;
+  if ( $block['startdate'] != '0000-00-00 00:00:00' && $block['startdate'] ) {
+    $start_time = strtotime($block['startdate']);
+  }
+  $end_time = NULL;
+  if ( $block['enddate'] != '0000-00-00 00:00:00' && $block['enddate'] ) {
+    $end_time = strtotime($block['enddate']);
+  }
+
+  if ( $start_time OR $end_time ) { //si las fechas tienen valor que se vean
+    $form['filtro']['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+  }
+  else  {
+    $form['filtro']['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Advanced'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+  }
+
+  $form['filtro']['advanced']['startdate'] = array(
+    '#type' => 'infoutilities_date_null',
+    '#title' => t('Start Date'),
+    '#description' => t('Enter start date of links that will appear in the block; leave blank to collect links FROM any time.'),
+    '#default_value' => $start_time?array('day' => date("j", $start_time),
+                            'month' => date("n", $start_time),
+                            'year' => date("Y", $start_time)):NULL
+  );
+
+  $form['filtro']['advanced']['enddate'] = array(
+    '#type' => 'infoutilities_date_null',
+    '#title' => t('End Date'),
+    '#description' => t('Enter end date of links that will appear in the block; leave blank to collect links TO any time.'),
+    '#default_value' => $end_time?array('day' => date("j", $end_time),
+                            'month' => date("n", $end_time),
+                            'year' => date("Y", $end_time)):NULL
+  );
+
+  $form['mostrar'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('View in block'),
+  );
+  $form['mostrar']['maxentries'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of Links'),
+    '#default_value' => $block['maxentries'] ? $block['maxentries'] : 10,
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#description' => t('The maximum number of links that will appear in the block.'),
+    '#required' => TRUE,
+  );
+  $form['mostrar']['more_pager'] = array(
+    '#type' => 'radios',
+    '#title' => t('Results as'),
+    '#options' => array(2 => t('Results Page'), 1 => t('Items List, with more... link'), 0 => t('Items List')),
+    '#default_value' => isset($block['more_pager']) ? $block['more_pager'] : 1,
+    '#description' => t("Select the format to show results. Results Page: shows a list of results (titles and descriptions), and a pager. Items List: shows a list of result's titles. More... link: allows access to other results."),
+  );
+  $form['mostrar']['orderby'] = array(
+    '#type' => 'radios',
+    '#title' => t('Order By'),
+    '#options' => array('date_desc' => t('Date (descending)'), 'date_asc' => t('Date (ascending)'), 'title_asc' => t('Title (ascending)'), 'title_desc' => t('Title (descending)')),
+    '#default_value' => isset($block['orderby']) ? $block['orderby'] : 'date_desc',
+    '#description' => t('How to order the results.'),
+  );
+
+  //en que region ubicar el bloque
+  $block_regions = infoutilities_regions() + array(BLOCK_REGION_NONE => '<'. t('none') .'>');
+  $def_theme = variable_get('theme_default', 'garland');
+  $form['def_theme'] = array(
+    '#type' => 'hidden',
+    '#value' => $def_theme,
+  );
+  if ($ibid) {
+	$region = db_result(db_query("SELECT region FROM {blocks} WHERE delta = '%s' AND theme = '%s'", 'infoscuttle-'.$ibid, $def_theme));
+  }
+  
+  $form['region'] = array(
+    '#type' => 'select',
+    '#title' => t('Region'),
+    '#description' => t('Assign a block to a region.'),
+    '#default_value' => $region ? $region : BLOCK_REGION_NONE,
+    '#options' => $block_regions,
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate the user input in infoscuttle_block_form
+ */
+function infoscuttle_block_form_validate($form, &$form_state) {
+  $result = db_fetch_object(db_query("SELECT url FROM {infoscuttle_settings} WHERE setid=%d", $form_state['values']['setid']));
+
+  $ws_url = check_url($result->url) .'index.php?wsdl';
+  if (!$fp = @fopen($ws_url, "r")) {
+    form_set_error('url', t('Sorry, check scuttle service URL at settings.'));
+  }
+  else {
+    fclose($fp);
+  }
+
+  if (!is_numeric($form_state['values']['maxentries'])) {
+    form_set_error('maxentries', t('You must select a number for the maximum number of links.'));
+  }
+  else if ($form_state['values']['maxentries'] <= 0) {
+    form_set_error('maxentries', t('Maximum number of links must be positive.'));
+  }
+}
+
+/**
+ * Save to DB infoscuttle block and return to infoscuttle administration page
+ */
+function infoscuttle_block_form_submit($form, &$form_state) {
+
+  $startdate = sprintf("%04d-%02d-%02d 00:00:00", $form_state['values']['startdate']['year'], $form_state['values']['startdate']['month'], $form_state['values']['startdate']['day']);
+  if ($form_state['values']['enddate']['year'] && $form_state['values']['enddate']['month'] && $form_state['values']['enddate']['day']) {
+    $enddate = sprintf("%04d-%02d-%02d 23:59:59", $form_state['values']['enddate']['year'], $form_state['values']['enddate']['month'], $form_state['values']['enddate']['day']);
+  }
+  else {
+    $enddate = "0000-00-00 00:00:00";
+  }
+  
+  $status = $form_state['values']['region'] != BLOCK_REGION_NONE;
+  $region = $status ? $form_state['values']['region'] : '';
+  $def_theme = $form_state['values']['def_theme'];
+
+  if ($form_state['values']['ibid']) {
+    db_query("UPDATE {infoscuttle_block} SET title='%s', descr='%s', descr_place=%d, setid=%d, users='%s', tags='%s', maxentries=%d, orderby='%s', startdate='%s', enddate='%s', more_pager=%d, tags_opr='%s' WHERE ibid=%d", $form_state['values']['title'], $form_state['values']['descr'], $form_state['values']['descr_place'], $form_state['values']['setid'], $form_state['values']['users'], $form_state['values']['tags'], $form_state['values']['maxentries'], $form_state['values']['orderby'], $startdate, $enddate, $form_state['values']['more_pager'], $form_state['values']['tags_opr'], $form_state['values']['ibid'] );
+    $ibid = $form_state['values']['ibid'];
+    //se actualiza title, region y status en blocks
+    db_query("UPDATE {blocks} SET region='%s', status = %d WHERE delta = '%s' AND theme='%s'", $region, $status, 'infoscuttle-'.$ibid, $def_theme);
+    //guardar en log de drupal
+    watchdog('block', "Updated '%module' block: '%title'.", array('%module' => 'Infoscuttle', '%title' => $form_state['values']['title']));
+  }
+  else {
+    db_query("INSERT INTO {infoscuttle_block} (title, descr, descr_place, setid, users, tags, maxentries, orderby, startdate, enddate, more_pager, tags_opr) VALUES ('%s', '%s', %d, %d, '%s', '%s', %d, '%s', '%s', '%s', %d, '%s')", $form_state['values']['title'], $form_state['values']['descr'], $form_state['values']['descr_place'], $form_state['values']['setid'], $form_state['values']['users'], $form_state['values']['tags'], $form_state['values']['maxentries'], $form_state['values']['orderby'], $startdate, $enddate, $form_state['values']['more_pager'],  $form_state['values']['tags_opr']);
+    $ibid = db_last_insert_id('infoscuttle_block', 'ibid');
+    //inserta con title, region, status y theme en blocks
+	db_query("INSERT INTO {blocks} (module, delta, theme, status, weight, region) VALUES ('%s', '%s', '%s', %d, %d, '%s')", 'infoscuttle', 'infoscuttle-'.$ibid, $def_theme, $status, -10, $region);
+    //guardar en log de drupal
+    watchdog('block', "Added '%module' block: '%title'.", array('%module' => 'Infoscuttle', '%title' => $form_state['values']['title']));
+  }
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/infoscuttle/block';
+}
+
+function infoscuttle_urls_list() {
+
+  $result = db_query("SELECT setid, url FROM {infoscuttle_settings} ORDER BY url");
+  $options = array();
+  while ($u = db_fetch_object($result)) {
+    $options[$u->setid] = check_url($u->url);
+  }
+  return $options;
+}
+
+/**
+ * Shows form to confirm deletion of an infoscuttle block
+ *
+ * @param $ibid
+ *   id of block to delete
+ * @return
+ *   HTML of form to confirm deletion of infoscuttle block
+ */
+function infoscuttle_admin_delete($ibid = 0) {
+  $block = infoscuttle_load_block($ibid);
+  if ($block['title'] == '') {
+    return drupal_access_denied();
+  }
+
+  return drupal_get_form('infoscuttle_confirm_delete_form', $ibid);
+}
+
+/**
+ * Form to confirm deletion of an infoscuttle block
+ *
+ * @param $ibid
+ *   id of block to delete
+ *
+ * @ingroup forms
+ * @see infoscuttle_confirm_delete_form_submit()
+ */
+function infoscuttle_confirm_delete_form(&$form_state, $ibid) {
+  $form['block'] = array('#type' => 'value', '#value' => $ibid);
+  $result = db_fetch_object(db_query("SELECT title FROM {infoscuttle_block} WHERE ibid=%d", $ibid));
+  $form['title'] = array('#type' => 'value', '#value' => $result->title);
+
+  return confirm_form(
+    $form,
+    t('Are you sure you want to delete %title?', array('%title' => $result->title)),
+    $_GET['destination'] ? $_GET['destination'] : 'admin/infoscuttle/block',
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Submit deletion of an infoscuttle block and return to infoscuttle administration page
+ */
+function infoscuttle_confirm_delete_form_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    infoscuttle_delete_block($form_state['values']['block']);
+    //guardar en log de drupal
+    watchdog('block', "Deleted '%module' block: '%title'.", array('%module' => 'Infoscuttle', '%title' => $form_state['values']['title']));
+  }
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/infoscuttle/block';
+}
+
+/**
+ * Delete a block from db and return to infoscuttle administration page
+ *
+ * @param $ibid
+ *   id of block to delete
+ */
+function infoscuttle_delete_block($ibid) {
+  db_query("DELETE FROM {infoscuttle_block} WHERE ibid=%d", $ibid);
+  db_query("DELETE FROM {blocks} WHERE module = 'infoscuttle' AND delta = 'infoscuttle-%d'", $ibid);
+  drupal_set_message(t('The block has been removed.'));
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/infoscuttle/block';
+}
+
+/**
+ * load block from db
+ *
+ * @param $ibid
+ *   id of block to load
+ * @retun
+ *   an associative array of block's data
+ */
+function infoscuttle_load_block($ibid) {
+  $obj = db_fetch_array(db_query("SELECT * FROM {infoscuttle_block} WHERE ibid=%d", $ibid));
+  return $obj;
+}
+/**
+ * @} End of "Block Administration".
+ */
+
+/**
+ * @name module setings 
+ * @{
+ * setting form to define URLs of Service.
+ */
+
+/**
+ * Setting page of infoscuttle
+ */
+function infoscuttle_settings() {
+
+  $header = array(t("Url"), t("Operations"));
+
+  $result = pager_query("SELECT setid, url FROM {infoscuttle_settings} ", 10, 1);
+  while ($u = db_fetch_object($result)) {
+    $rows[] = array(
+      array("data" => check_url($u->url)),
+      array("data" => l(t('edit'), "admin/infoscuttle/settings/edit/$u->setid") .' | '. l(t('delete'), "admin/infoscuttle/settings/delete/$u->setid"))
+    );
+  }
+
+  if (!count($rows)) {
+    $rows[] = array(array("data" => t("No settings exist."), "colspan" => "2"));
+  }
+
+  //presenta los resultados de una consulta a la BD como un grupo de pags
+  $pager = theme("pager", NULL, 10, 1);
+  if (!empty($pager)) {
+    $rows[] = array(array("data" => $pager, "colspan" => "2"));
+  }
+
+  $output = theme('table', $header, $rows);
+
+  return $output;
+}
+
+/**
+ * Form to configure scuttle ws url
+ *
+ * @ingroup forms
+ * @see infoscuttle_settings_form_submit()
+ * @see infoscuttle_settings_form_validate()
+ */
+function infoscuttle_settings_form(&$form_state, $setid=0) {
+
+  $setting = db_fetch_array(db_query("SELECT * FROM {infoscuttle_settings} WHERE setid=%d", $setid));
+
+  $form['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL'),
+    '#default_value' => $setting['url'],
+    '#maxlength' => 255,
+    '#description' => t('The fully-qualified URL of the infoscuttle server( Endpoint). Ej. http://dominio/services/soap/'),
+    '#required' => TRUE,
+  );
+
+  $form['setid'] = array(
+    '#type' => 'hidden',
+    '#value' => $setid,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate the user input at infoscuttle_settings_form
+ */
+function infoscuttle_settings_form_validate($form, &$form_state) {
+  //que la url termine en /
+  $alreves = strrev($form_state['values']['url']);
+  if ( $alreves[0] != '/') {
+    $form_state['values']['url'] .= '/';
+  }
+
+  $ws_url = check_url($form_state['values']['url']);
+  /*if (!$fp = @fopen($ws_url, "r")) {
+    form_set_error('url', t('Sorry, that is not a valid URL.'));
+  }
+  else {
+    fclose($fp);
+  }*/
+
+  if (!$form_state['values']['setid']) {
+    $result = db_fetch_array(db_query("SELECT setid FROM {infoscuttle_settings} WHERE url='%s'", $form_state['values']['url']));
+    if ($result['setid']) {
+      form_set_error('url', t('Sorry, that URL already exists at settings.'));
+    }
+  }
+
+}
+
+/**
+ * Save server url to DB and redirect to settings page
+ */
+function infoscuttle_settings_form_submit($form, &$form_state) {
+  if ($form_state['values']['setid']) {
+    db_query("UPDATE {infoscuttle_settings} SET url='%s' WHERE setid=%d", $form_state['values']['url'], $form_state['values']['setid'] );
+  }
+  else {
+    db_query("INSERT INTO {infoscuttle_settings} (url) VALUES ('%s')", $form_state['values']['url']);
+  }
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/infoscuttle/settings';
+}
+
+/**
+ * Form to confirm deletion of an infoscuttle setting
+ *
+ * @param $setid
+ *   id of setting to delete
+ *
+ * @ingroup forms
+ * @see infoscuttle_setting_delete_form_submit()
+ */
+function infoscuttle_setting_delete_form(&$form_state, $setid) {
+  $form['setting'] = array('#type' => 'value', '#value' => $setid);
+  $result = db_fetch_object(db_query("SELECT url FROM {infoscuttle_settings} WHERE setid=%d", $setid));
+
+  // Construct the list items, whit blocks titles.
+  $block = db_query("SELECT title FROM {infoscuttle_block} WHERE setid=%d", $setid);
+  while ($u = db_fetch_object($block)) {
+    $blocks[] = check_plain($u->title);
+  }
+
+  if (isset($blocks)) {
+    //hay bloques usando esa url
+    $form['blocks'] = array('#value' => '<p>'. t('The following blocks are using this setting. They will be deleted, and <em>all data from them will be lost</em>!') .'</p>'. theme('item_list', $blocks));
+    return confirm_form(
+      $form,
+      t('Confirm deletion'),
+      'admin/infoscuttle/settings',
+      t('Are you sure you want to delete %url and blocks above?. <p>This action cannot be undone.</p>', array('%url' => check_url($result->url))),
+      t('Delete'),
+      t('Cancel')
+    );
+  }
+  else {
+    return confirm_form(
+      $form,
+      t('Are you sure you want to delete %url?', array('%url' => check_url($result->url))),
+      $_GET['destination'] ? $_GET['destination'] : 'admin/infoscuttle/settings',
+      t('This action cannot be undone.'),
+      t('Delete'),
+      t('Cancel')
+    );
+  }
+}
+
+/**
+ * Submit deletion of an infoscuttle block and return to infoscuttle administration page
+ */
+function infoscuttle_setting_delete_form_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    db_query("DELETE FROM {infoscuttle_settings} WHERE setid=%d", $form_state['values']['setting']);
+    db_query("DELETE FROM {infoscuttle_block} WHERE setid=%d", $form_state['values']['setting']);
+  }
+  cache_clear_all();
+  $form_state['redirect'] = 'admin/infoscuttle/settings';
+}
+/**
+ * @} End of "module setings".
+ */
+
+/**
+ * @name Render results
+ * @{
+ * Render Blocks and pages with results .
+ */
+
+/**
+ * Render links for _block() hook
+ *
+ * @param $ibid
+ *   id of infoscuttle block to render
+ * @param $more
+ *   1: render 15 links with pager 
+ * @return
+ *   associative array (of block's title and content) or FALSE if error
+ */
+function infoscuttle_block_render($ibid, $more = 0) {
+
+  // retrieve which infoscuttle block to work with
+  $block = db_fetch_object(db_query("SELECT * FROM {infoscuttle_block} WHERE ibid=%d", $ibid));
+
+  //no existe ese block, retorna con false para no mostrarlo
+  if (!$block) {
+    if (user_is_logged_in()) {//show error only logged in users
+      drupal_set_message(t('InfoScuttle block does not exist (ibid:%ibid)', array('%ibid' => $ibid)));
+    }
+    return FALSE;
+  }
+
+  $query_params = array();
+
+  //$all 0: render maxentries links in block, 1: render all links (15) in page and pager
+  //$all = 0;
+  /*if (isset($_GET['ibid']) && $_GET['ibid']== $ibid && isset($_GET['all'])) {
+    $all = $_GET['all'];
+
+    //para mantener ibid y all en los links del paginador
+    $query_params = array('ibid' => $ibid, 'all' => $all);
+  }*/
+
+  $param = array(); //arreglo de parametros de la funcion
+
+  //tags con + como separador
+  $param['tags']= $block->tags;
+  if ($param['tags']) {
+    $param['tags'] = trim($param['tags']);
+    $param['tags'] = str_replace( ',', '+', $param['tags']);
+  }
+  else {
+    $param['tags']= NULL;
+  }
+
+  $param['startdate']  = ($block->startdate!='0000-00-00 00:00:00')?$block->startdate:NULL;
+  $param['enddate']    = ($block->enddate!='0000-00-00 00:00:00')?$block->enddate:NULL;
+
+  //$param['text'] = $block->text;
+  $param['users'] = $block->users ? $block->users : NULL;
+  $param['orderby'] = $block->orderby;
+
+  //setear maxentries y more_pager dependiendo de $all (1 mostrar todos, 0 mostrar maxentries del block)
+  $maxentries = $more ? 15 : $block->maxentries;        //si $more=1, mostrar 15 en la pag
+  $block->more_pager = $more ? 3 : $block->more_pager;  //si $more=1, paginar resultados more_pager=3
+  $param['results'] = $block->more_pager;
+
+  $param['tags_opr'] = $block->tags_opr;
+
+  $result = db_fetch_object(db_query("SELECT url FROM {infoscuttle_settings} WHERE setid=%d", $block->setid));
+  $ws_url = check_url($result->url .'index.php?wsdl');
+
+  $element = 'infoscuttle'. $ibid;
+
+  $result = infoscuttle_ws_result($ws_url, $maxentries, $element, $param);
+
+  //no hay resultados de la busqueda, o ocurrio error
+  if (!$result) {
+	return FALSE;
+  }
+
+  $block_foot = NULL;
+  switch ($result['total']) {
+    case -1:
+      if (user_is_logged_in()) {//show error only logged in users
+        $results_list = $result['error'];
+      }
+	  break;
+	
+	case 0:
+      if (user_is_logged_in()) {//show error only logged in users
+        $results_list = t('Your search yielded no results');
+      }
+	  break;
+	
+	default:
+      switch ($block->more_pager) {
+        case 2: //Results Page (total, lista con:titulo y descr, paginador)
+          $results_list = theme('infoscuttle_results', $result, $param);
+          $block_foot = theme('infoutilities_pager', NULL, $maxentries, $element, array(), 5);
+          break;
+ 
+        case 1://Items List, with more... link (lista con:titulo, more...)
+          $results_list = theme('infoscuttle_results_items', $result);
+          if ($result['total'] > $maxentries ) {
+            //se agrega link more... al bloque, si la ctdad de resultados > maxresults
+            //$options['query']='ibid='. $ibid .'&all=1';
+		    $options['query'] = array( 'isc_more' => $title .'/'. $ibid, 'isc_id' => $ibid);
+			$more_link = l(t('more...'), $_GET['q'], $options );
+            $block_foot = '<div class="more-link">'. $more_link .'</div>';
+          }
+          break;
+
+        case 0: //Items List
+          $results_list = theme('infoscuttle_results_items', $result);
+          break;
+
+        case 3: //Items List, with more... (despues de presionar more...)
+          //resultados de la busqueda como items_list (lista con:titulo, paginador)
+          $results_list = theme('infoscuttle_results_items', $result);
+		  $query_params['isc_id'] = $_GET['isc_id'];
+          $block_foot = theme('infoutilities_pager', NULL, $maxentries, $element, $query_params, 5);
+          break;
+      }
+  }
+
+  //resultados
+  $output = $results_list;
+  
+  if (!empty($block_foot)) {
+    $output .= $block_foot;
+  }
+  //ubicando descripcion del bloque si existe
+  if(isset($block->descr) && isset($block->descr_place) && $block->descr && $block->descr_place) {
+    if($block->descr_place == 1) {
+	  $output = filter_xss($block->descr) . $output;
+    }
+	else {
+	  $output = $output . filter_xss($block->descr);
+    }
+  }
+
+  cache_clear_all();
+  return array("content" => $output, "subject" => check_plain($block->title));
+}
+/**
+ * @} End of "Render results".
+ */
+
+/**
+ * @name Integration with Web Service
+ * @{
+ * Integration with Web Service to get links.
+ */
+
+/**
+ * Perform an array results, basado en el limit, para obtener solo la cantidad de
+ * resultados que se van a mostrar de una vez.
+ *
+ * Esta funcion permite paginar (o no) los resultados de la busqueda con el ws;
+ * El ws debe tener un metodo que devuelva el total de resultados.
+ * Si se van a paginar los resultados utiliza el modulo 'infoutilities_pager' y
+ * hay que usar el theme 'infoutilities_pager', para mostrar los
+ * controles de la paginacion.
+ *
+ * @param $url
+ *   La URL del ws
+ * @param $limit
+ *   El numero de resultados a mostrar por pagina.
+ * @param $element
+ *   Un identificador para diferenciar entre multiples paginadores en una pagina.
+ *   Nosotros usamos el id de bloque de este modulo, ej: infoscuttle3.
+ * @param $parameters
+ *   Un arreglo asociativo de los parametros para la busqueda con el ws.
+ * @return
+ *   Un arreglo asociativo con los resultados o FALSE si hubo algún error
+ *
+ */
+function infoscuttle_ws_result($url, $limit = 10, $element, $parameters = array()) {
+
+  //el ws no esta disponible, retorna con false para no mostrar el bloque
+  if (!$fp = @fopen($url, "r")) {
+    if (user_is_logged_in()) {//show error only logged in users
+      drupal_set_message(t("Infoscuttle Error: Sorry, this scuttle Service (%url) is not available now. Block:%elem.", array('%url' => $url, '%elem' => $element)), 'error', FALSE);
+    }
+    return FALSE;
+  }
+  fclose($fp);
+
+  if (!extension_loaded ('soap')) {
+    if (user_is_logged_in()) {//show error only logged in users
+      drupal_set_message(t('Sorry, the SOAP extension for PHP is not enabled. Check your <code>php.ini</code> to see how you can enable it.'), 'error', FALSE);
+    }
+    return FALSE;
+  }
+  //WSDL cache.
+  ini_set("soap.wsdl_cache_enabled", '1');
+
+  //cliente del ws
+  $client = new SoapClient($url, array('timeout' => 90, 'trace' => 1, 'exceptions' => 1));
+  $from = 0;
+
+  if ($parameters['results']==2 or $parameters['results']==3) {//paginar resultados
+    //llama al paginador para calcular el from que se va pasar al ws
+    $from = infoutilities_pager_get_from( $limit, $element);
+  }
+  try {
+    //search with SOAP ws sin texto
+    $result = $client->search(NULL, $from, $limit, $parameters['tags'], $parameters['users'], $parameters['startdate'], $parameters['enddate'], $parameters['orderby'], $parameters['tags_opr']);
+
+    if ($parameters['results']==2 or $parameters['results']==3) {//paginar resultados
+      //setear total de resultados y total de paginas en el bloque en variables del paginador
+      infoutilities_pager_set_totals($limit, $element, $result['total']);
+    }
+    return $result;
+  }
+  catch (SoapFault $exception) {
+    if (user_is_logged_in()) {//show error only logged in users
+      drupal_set_message(t("Service Error (%module): @faultstr, block: %elem", array('%module' => 'infoscuttle', '@faultstr' => $exception->faultstring, '%elem' => $element)), 'error', FALSE);
+    }
+	return FALSE;
+  }
+}
+/**
+ * @} End of "Integration with Web Service".
+ */
+
+/**
+ * @name Theme functions
+ * @{
+ * Themes for links.
+ */
+
+/**
+ * Return a themed infoscuttle results content.
+ *
+ * @param $results
+ *   An associative array of results:, each result is an associative array:
+ *   - $result['total']: Total of results.
+ *   - $result['bookmarks']: an associative array with title, url and description of each result.
+ *
+ */
+function theme_infoscuttle_results($result) {
+
+  $output = '<p>'. $result['total'] . t(' found results.') .'</p>';
+  $output .= '<dl>';
+
+  $results = $result['bookmarks'];
+  foreach ($results as $value) {
+    $output .= '<dt>'. l($value['bTitle'], check_url($value['bAddress'])) .'</dt>';
+    $output .= '<dd>'. filter_xss($value['bDescription'], array('a', 'em', 'strong','ul', 'ol', 'li', 'dl', 'dt', 'dd', 'p', 'br /')) .'</dd>';
+
+  }
+  unset($results);
+  $output .= '</dl>';
+
+  return $output;
+}
+
+/**
+ * Return a themed infoscuttle results as list of items.
+ *
+ * @param $results
+ *   An associative array of results:, each result is an associative array:
+ *   - $result['total']: Total of results.
+ *   - $result['bookmarks']: an associative array with title, url and description of each result.
+ *
+ */
+function theme_infoscuttle_results_items($result) {
+
+  //formando items de la lista a mostrar en el bloque
+  $results = $result['bookmarks'];
+  foreach ($results as $value) {
+    $options['attributes'] = array('title' => filter_xss($value['bDescription'], array('a', 'em', 'strong','ul', 'ol', 'li', 'dl', 'dt', 'dd', 'p', 'br /')));
+    $rows[] = l($value['bTitle'], check_url($value['bAddress']), $options);
+  }
+
+  //dar formato de unordered list a los items
+  $output = theme('item_list', $rows);
+
+  return $output;
+}
+/**
+ * @} End of "Theme functions".
+ */
+
+/**
+ * Aux function to show Help of infoscuttle
+ */
+function infoscuttle_showhelp() {
+  if(!module_exists('advanced_help')){
+      $output .= '<p>'. t('<strong>Description:</strong> It allows to visualize inside Drupal links of Scuttle. For example: <a href="http://infomed20.sld.cu/infoenlaces">Infoenlaces</a>. It integrates with the Web Service SOAP created by Infomed, for the Scuttle.') .'</p>';
+      $output .= '<p>'. t('<strong>Installation:</strong> Copy the module to the folder of modules of your installation of Drupal (..\sites\all\modules\). Enable it in administer->site building->modules. When module is enabled, it creates administration menu, tables with prefix infoscuttle_.') .'</p>';
+      $output .= '<p>'. t("<strong>Administration Menu:</strong><ul><li>Administer Infoscuttle (shows module help)<ul><li>Permissions<ul><li>View Infoscuttle Links: allows to see the list of links retrieved by infoscuttle blocks.</li><li>Administer Infoscuttle: allows the access to the administration menu.</li><li>Administer Infoscuttle Blocks: allows the access to the Blocks option.</li><li>Configure Infoscuttle: allows the access to the Settings option.</li></ul></li><li>Settings<ul><li>Url: to set Urls of different Scuttle instances. They can be created, modified and eliminated.</li></ul></li><li>Blocks<ul><li>Infoscuttle Block: to configure a search based on Url of Scuttle Server, combinations of categories, users and date; and how to display results. They can be created, modified and eliminated.</li></ul></li></ul></li></ul>") .'</p>';
+      $output .= '<p>'. t('<strong>Tables:</strong> <ul><li>infoscuttle_settings: to save configuration servers Scuttle</li></ul> <ul><li>infoscuttle_block: to save personalization of blocks module</li></ul>') .'</p>';
+      $output .= '<p>'. t('<strong>Visualization:</strong> Like any other block of Drupal, Infoscuttle block should be placed in any region for display, this can be done in: administer->site building->blocks. Taking into account all the customization options the block displays a list of recovered links from Scuttle Web Service.') .'</p>';
+      $output .= '<p>'. t('If the Web Service gives error or not recover any data the block is not visualized.') .'</p>';
+      $output .= '<p>'. t('<strong>Disable:</strong> Disable in: administer->modules. After would stop to be shown: <ul><li>The Administer Infoscuttle Menu</li></ul> <ul><li>The blocks that had been located in any region</li></ul> But still stay the tables created by the module with all its data.') .'</p>';
+      $output .= '<p>'. t('<strong>Uninstall:</strong> Uninstall in: administer->modules->uninstall. After would eliminate the tables created by the module and in the table blocks (Drupal) deletes records with infoscuttle blocks.') .'</p>';
+  }
+  else{
+    $output = advanced_help_index_page('infoscuttle');
+  }
+  return $output;
+}
